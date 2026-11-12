@@ -1,0 +1,877 @@
+/* ==========================================================================
+   全彩歷險漫畫《阿宅聯盟：決戰AI太陽王國》- 網頁版電子書樣式表
+   專為雙頁跨頁掃描圖優化，支援滾輪縮放與平移
+   ========================================================================== */
+
+:root {
+  --bg-primary: #0a0d14;
+  --bg-secondary: #121824;
+  --bg-card: rgba(24, 32, 47, 0.85);
+  --bg-glass: rgba(18, 24, 36, 0.8);
+  --border-color: rgba(255, 180, 0, 0.22);
+  --border-glow: rgba(255, 170, 0, 0.45);
+  
+  --text-main: #f0f4fc;
+  --text-muted: #8e9bb0;
+  --text-highlight: #ffb830;
+  
+  --accent-sun: #ff9800;
+  --accent-sun-glow: #ffb74d;
+  --accent-cyan: #00e5ff;
+  --accent-cyan-glow: rgba(0, 229, 255, 0.4);
+  
+  --header-height: 56px;
+  --footer-height: 80px;
+  --transition-normal: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  --book-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Noto Sans TC', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  user-select: none;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background: radial-gradient(circle at 50% 20%, #162030 0%, #0a0d14 80%);
+}
+
+/* ==========================================================================
+   頂部導航列 (Header)
+   ========================================================================== */
+.site-header {
+  height: var(--header-height);
+  background: var(--bg-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.brand-icon {
+  font-size: 1.35rem;
+  color: var(--accent-sun);
+  filter: drop-shadow(0 0 8px var(--accent-sun-glow));
+}
+
+.comic-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: linear-gradient(90deg, #ffffff 0%, var(--accent-sun) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.series-badge {
+  font-size: 0.72rem;
+  background: rgba(255, 152, 0, 0.15);
+  color: var(--accent-sun);
+  border: 1px solid rgba(255, 152, 0, 0.4);
+  padding: 2px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-icon {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  outline: none;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 152, 0, 0.18);
+  border-color: var(--accent-sun);
+  color: var(--accent-sun);
+  box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+}
+
+.btn-icon:active {
+  transform: scale(0.96);
+}
+
+.btn-icon.active {
+  background: var(--accent-sun);
+  color: #000;
+  border-color: var(--accent-sun);
+  box-shadow: 0 0 12px var(--accent-sun-glow);
+}
+
+.btn-icon i {
+  font-size: 1rem;
+}
+
+/* ==========================================================================
+   核心閱讀區域 (Main Comic Viewer)
+   ========================================================================== */
+.reader-viewport {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: calc(100vh - var(--header-height) - var(--footer-height));
+  cursor: default;
+}
+
+.comic-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  padding: 10px 50px;
+  transform-origin: center center;
+  transition: transform 0.05s linear;
+}
+
+/* 放大時的游標外觀 */
+.comic-stage.zoomed {
+  cursor: grab;
+}
+
+.comic-stage.is-panning {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+.comic-stage.fit-width {
+  height: 100%;
+  align-items: flex-start;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.comic-stage.fit-width .comic-img {
+  max-height: none;
+  width: 100%;
+  max-width: 1200px;
+  height: auto;
+}
+
+.page-frame {
+  height: 100%;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.comic-img {
+  max-height: calc(100vh - var(--header-height) - var(--footer-height) - 20px);
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: var(--book-shadow);
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+  background-color: #121620;
+}
+
+.comic-img.loaded {
+  opacity: 1;
+}
+
+/* 載入中動畫指示器 */
+.loading-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(10, 13, 20, 0.9);
+  border: 1px solid var(--accent-sun);
+  border-radius: 12px;
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--accent-sun);
+  font-size: 0.95rem;
+  box-shadow: 0 0 24px rgba(255, 152, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 20;
+}
+
+.loading-indicator.active {
+  opacity: 1;
+}
+
+.loading-indicator i {
+  font-size: 1.4rem;
+}
+
+/* 懸浮左右翻頁按鈕 */
+.floating-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 72px;
+  background: rgba(18, 24, 36, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 50;
+  transition: var(--transition-normal);
+  backdrop-filter: blur(8px);
+}
+
+.floating-nav-btn:hover:not(:disabled) {
+  background: rgba(255, 152, 0, 0.75);
+  color: #000;
+  border-color: var(--accent-sun);
+  box-shadow: 0 0 16px rgba(255, 152, 0, 0.5);
+}
+
+.floating-nav-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+.floating-prev {
+  left: 12px;
+}
+
+.floating-next {
+  right: 12px;
+}
+
+.floating-nav-btn i {
+  font-size: 1.35rem;
+}
+
+/* ==========================================================================
+   底部控制列與版權資訊 (Footer & Controls)
+   ========================================================================== */
+.site-footer {
+  height: var(--footer-height);
+  background: var(--bg-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 16px;
+  z-index: 100;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  gap: 4px;
+}
+
+.control-bar {
+  width: 100%;
+  max-width: 980px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.nav-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.progress-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 520px;
+}
+
+.page-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.page-slider:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.page-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-sun);
+  border: 2px solid #fff;
+  box-shadow: 0 0 8px var(--accent-sun-glow);
+  cursor: grab;
+  transition: transform 0.15s ease;
+}
+
+.page-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.25);
+}
+
+.page-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-sun);
+  border: 2px solid #fff;
+  box-shadow: 0 0 8px var(--accent-sun-glow);
+  cursor: grab;
+}
+
+.page-indicator-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.page-input {
+  width: 50px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--accent-sun);
+  font-weight: 700;
+  text-align: center;
+  font-size: 0.88rem;
+  outline: none;
+  transition: var(--transition-normal);
+}
+
+.page-input:focus {
+  border-color: var(--accent-sun);
+  background: rgba(255, 152, 0, 0.15);
+  box-shadow: 0 0 8px rgba(255, 152, 0, 0.35);
+}
+
+.btn-jump {
+  height: 28px;
+  padding: 0 8px;
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-jump:hover {
+  border-color: var(--accent-sun);
+  color: var(--accent-sun);
+}
+
+.copyright-notice {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.copyright-notice i {
+  color: var(--accent-sun);
+  font-size: 0.8rem;
+}
+
+/* ==========================================================================
+   吉祥物元件 (Mascot Widget)
+   ========================================================================== */
+.mascot-container {
+  position: fixed;
+  left: 20px;
+  bottom: 88px;
+  z-index: 1000;
+  cursor: grab;
+  touch-action: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+  user-select: none;
+  transition: transform 0.15s ease-out;
+}
+
+.mascot-container.is-dragging {
+  cursor: grabbing !important;
+  transition: none !important;
+}
+
+.mascot-avatar {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  pointer-events: auto;
+  transition: filter 0.3s ease, transform 0.2s ease;
+  will-change: transform, filter;
+}
+
+.mascot-container:hover .mascot-avatar {
+  animation: neon-rainbow 1.8s infinite alternate, mascot-shake 0.4s infinite ease-in-out;
+}
+
+@keyframes neon-rainbow {
+  0% {
+    filter: drop-shadow(0 0 10px #ff007f) drop-shadow(0 0 20px #ff007f) drop-shadow(0 0 35px #ff007f);
+  }
+  25% {
+    filter: drop-shadow(0 0 10px #00ffff) drop-shadow(0 0 20px #00ffff) drop-shadow(0 0 35px #00ffff);
+  }
+  50% {
+    filter: drop-shadow(0 0 10px #ffea00) drop-shadow(0 0 20px #ffea00) drop-shadow(0 0 35px #ffea00);
+  }
+  75% {
+    filter: drop-shadow(0 0 10px #00ff66) drop-shadow(0 0 20px #00ff66) drop-shadow(0 0 35px #00ff66);
+  }
+  100% {
+    filter: drop-shadow(0 0 10px #b000ff) drop-shadow(0 0 25px #b000ff) drop-shadow(0 0 40px #b000ff);
+  }
+}
+
+@keyframes mascot-shake {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  20% {
+    transform: translate(-3px, 2px) rotate(-3deg);
+  }
+  40% {
+    transform: translate(3px, -2px) rotate(3deg);
+  }
+  60% {
+    transform: translate(-2px, -2px) rotate(-2deg);
+  }
+  80% {
+    transform: translate(2px, 2px) rotate(2deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+.mascot-bubble {
+  position: absolute;
+  bottom: 100px;
+  left: 0;
+  width: max-content;
+  max-width: 220px;
+  background: rgba(14, 20, 32, 0.95);
+  border: 1px solid var(--accent-sun);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 152, 0, 0.4);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(8px) scale(0.9);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  white-space: normal;
+  text-align: left;
+}
+
+.mascot-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 30px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--accent-sun) transparent transparent transparent;
+}
+
+.mascot-bubble.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ==========================================================================
+   縮圖導航抽屜 (Thumbnail Drawer)
+   ========================================================================== */
+.thumb-drawer {
+  position: fixed;
+  top: var(--header-height);
+  bottom: var(--footer-height);
+  right: -360px;
+  width: 340px;
+  background: rgba(12, 16, 24, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-left: 1px solid var(--border-color);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.6);
+}
+
+.thumb-drawer.open {
+  right: 0;
+}
+
+.thumb-header {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--accent-sun);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.thumb-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.thumb-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.thumb-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.thumb-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition-normal);
+  outline: none;
+}
+
+.thumb-item:hover {
+  background: rgba(255, 152, 0, 0.15);
+  border-color: var(--accent-sun);
+  transform: translateY(-2px);
+}
+
+.thumb-item.active {
+  border-color: var(--accent-sun);
+  background: rgba(255, 152, 0, 0.25);
+  box-shadow: 0 0 10px rgba(255, 152, 0, 0.4);
+}
+
+.thumb-img-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 4px;
+  background-color: #000;
+}
+
+.thumb-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumb-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.thumb-item.active .thumb-label {
+  color: var(--accent-sun);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   說明與快速鍵彈窗 (Help Modal)
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  padding: 20px;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-content {
+  background: #141b27;
+  border: 1px solid var(--accent-sun);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 152, 0, 0.3);
+  overflow: hidden;
+  animation: modal-pop 0.25s ease-out;
+}
+
+@keyframes modal-pop {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--accent-sun);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.modal-body {
+  padding: 20px 18px;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.shortcut-keys {
+  display: flex;
+  gap: 6px;
+}
+
+kbd {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 0.8rem;
+  color: var(--accent-sun);
+  font-family: inherit;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================================================
+   響應式設計 (RWD Responsive Design)
+   ========================================================================== */
+@media (max-width: 992px) {
+  .comic-title {
+    font-size: 0.95rem;
+  }
+  .series-badge {
+    display: none;
+  }
+  .comic-stage {
+    padding: 8px 36px;
+  }
+  .floating-nav-btn {
+    width: 40px;
+    height: 56px;
+  }
+  .floating-prev {
+    left: 8px;
+  }
+  .floating-next {
+    right: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --header-height: 52px;
+    --footer-height: 104px;
+  }
+
+  .comic-stage {
+    padding: 6px 4px;
+  }
+
+  .comic-title {
+    max-width: 170px;
+    font-size: 0.88rem;
+  }
+
+  .btn-icon span {
+    display: none;
+  }
+
+  .btn-icon {
+    padding: 0 9px;
+    height: 34px;
+  }
+
+  .site-footer {
+    padding: 6px 12px;
+    height: var(--footer-height);
+  }
+
+  .control-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .progress-section {
+    order: 1;
+    width: 100%;
+    max-width: 100%;
+    gap: 8px;
+  }
+
+  .nav-buttons-group {
+    order: 2;
+  }
+
+  .page-indicator-form {
+    order: 3;
+  }
+
+  .copyright-notice {
+    font-size: 0.7rem;
+    margin-top: 2px;
+  }
+
+  .floating-nav-btn {
+    width: 32px;
+    height: 48px;
+    opacity: 0.65;
+  }
+
+  .floating-prev {
+    left: 4px;
+  }
+
+  .floating-next {
+    right: 4px;
+  }
+
+  .mascot-avatar {
+    width: 68px;
+    height: 68px;
+  }
+
+  .mascot-container {
+    left: 12px;
+    bottom: 112px;
+  }
+
+  .thumb-drawer {
+    width: 85vw;
+    right: -85vw;
+  }
+}
+
+@media (max-width: 420px) {
+  .comic-title {
+    max-width: 130px;
+    font-size: 0.82rem;
+  }
+  .page-input {
+    width: 38px;
+  }
+  .mascot-avatar {
+    width: 58px;
+    height: 58px;
+  }
+}
